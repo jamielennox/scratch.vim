@@ -1,7 +1,12 @@
 " File: scratch.vim
 " Author: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: 1.0
-" Last Modified: June 3, 2003
+" Version: 1.1
+" Last Modified: April 26, 2011
+" Modified By: Thomas Pelletier (thomas AT pelletier DOT im)
+"
+" Changes
+" -------
+" Added the ScratchToggle command.
 "
 " Overview
 " --------
@@ -30,6 +35,10 @@
 "
 "       :Sscratch
 "
+" You can toggle the Scratch window using
+"
+"       :ScratchToggle
+"
 " When you close the scratch buffer window, the buffer will retain the
 " contents. You can again edit the scratch buffer by openeing it using one of
 " the above commands. There is no need to save the scatch buffer.
@@ -43,6 +52,7 @@
 " opened in a new window
 "
 " ****************** Do not modify after this line ************************
+
 if exists('loaded_scratch') || &cp
     finish
 endif
@@ -50,6 +60,43 @@ let loaded_scratch=1
 
 " Scratch buffer name
 let ScratchBufferName = "__Scratch__"
+
+
+" Stolen from Steve Losh's Gundo source code:
+" https://github.com/sjl/gundo.vim/blob/master/plugin/gundo.vim#L405
+function! s:ScratchGoToWindowForBufferName(name)"{{{
+    if bufwinnr(bufnr(a:name)) != -1
+        exe bufwinnr(bufnr(a:name)) . "wincmd w"
+        return 1
+    else
+        return 0
+    endif
+endfunction"}}}
+
+" https://github.com/sjl/gundo.vim/blob/master/plugin/gundo.vim#L414
+function! s:ScratchIsVisible()"{{{
+    if bufwinnr(bufnr(g:ScratchBufferName)) != -1
+        return 1
+    else
+        return 0
+    endif
+endfunction"}}}
+
+" https://github.com/sjl/gundo.vim/blob/master/plugin/gundo.vim#L605
+function! s:ScratchToggle()"{{{
+    if s:ScratchIsVisible()
+        call s:ScratchClose()
+    else
+        call s:ScratchBufferOpen(1)
+    endif
+endfunction"}}}
+
+" https://github.com/sjl/gundo.vim/blob/master/plugin/gundo.vim#L585
+function! s:ScratchClose()"{{{
+    if s:ScratchGoToWindowForBufferName(g:ScratchBufferName)
+        quit
+    endif
+endfunction"}}}
 
 " ScratchBufferOpen
 " Open the scratch buffer
@@ -107,4 +154,6 @@ autocmd BufNewFile __Scratch__ call s:ScratchMarkBuffer()
 command! -nargs=0 Scratch call s:ScratchBufferOpen(0)
 " Command to open the scratch buffer in a new split window
 command! -nargs=0 Sscratch call s:ScratchBufferOpen(1)
+" Command to close the scratch window
+command! -nargs=0 ScratchToggle call s:ScratchToggle()
 
